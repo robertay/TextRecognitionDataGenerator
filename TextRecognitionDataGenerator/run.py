@@ -1,6 +1,7 @@
 import argparse
 import os, errno
 import random
+import re
 import string
 
 from tqdm import tqdm
@@ -12,11 +13,6 @@ from string_generator import (
 )
 from data_generator import FakeTextDataGenerator
 from multiprocessing import Pool
-
-def valid_range(s):
-    if len(s.split(',')) > 2:
-        raise argparse.ArgumentError("The given range is invalid, please use ?,? format.")
-    return tuple([int(i) for i in s.split(',')])
 
 def parse_arguments():
     """
@@ -99,11 +95,19 @@ def parse_arguments():
         default=False
     )
     parser.add_argument(
-        "-f",
-        "--format",
+        "-ht",
+        "--height",
         type=int,
         nargs="?",
         help="Define the height of the produced images",
+        default=32,
+    )
+    parser.add_argument(
+        "-rht",
+        "--random_height",
+        type=int,
+        nargs="?",
+        help="When set, height is chosen randomly with this value as maximum height and -h as minimum height",
         default=32,
     )
     parser.add_argument(
@@ -160,11 +164,18 @@ def parse_arguments():
         default=False,
     )
     parser.add_argument(
-        "-b",
+        "-bg",
         "--background",
         type=int,
         nargs="?",
         help="Define what kind of background to use. 0: Gaussian Noise, 1: Plain white, 2: Quasicrystal, 3: Pictures",
+        default=0,
+    )
+    parser.add_argument(
+        "-rbg",
+        "--random_bg",
+        action="store_true",
+        help="When set, background will be randomly chosen among Gaussian noise, Plain white, and Quasicrystal",
         default=0,
     )
     parser.add_argument(
@@ -205,6 +216,14 @@ def parse_arguments():
         default=-1
     )
     parser.add_argument(
+        "-rwd",
+        "--random_width",
+        type=int,
+        nargs="?",
+        help="When set, randomly choose between -wd(minimum value) and this(maximum value)",
+        default=-1
+    )
+    parser.add_argument(
         "-al",
         "--alignment",
         type=int,
@@ -213,12 +232,23 @@ def parse_arguments():
         default=1
     )
     parser.add_argument(
-        "-tc",
-        "--text_color",
-        type=str,
-        nargs="?",
-        help="Define the text's color, should be either a single hex color or a range in the ?,? format.",
-        default='#282828'
+        "-bb",
+        "--bounding_box",
+        action="store_true",
+        help="When set, calculate bounding boxes around each character"
+    )
+    parser.add_argument(
+        "-vbb",
+        "--view_bounding_box",
+        action="store_true",
+        help="When set, the application will draw character bounding boxes on the image for developer sanity check"
+    )
+    parser.add_argument(
+        "-ral",
+        "--random_alignment",
+        action="store_true",
+        help="When set, randomize alignment of text in the image",
+        default=1
     )
 
     return parser.parse_args()
@@ -240,6 +270,8 @@ def load_fonts(lang):
 
     if lang == 'cn':
         return [os.path.join('fonts/cn', font) for font in os.listdir('fonts/cn')]
+    elif lang == 'ja':
+        return [os.path.join('fonts/ja', font) for font in os.listdir('fonts/ja')]
     else:
         return [os.path.join('fonts/latin', font) for font in os.listdir('fonts/latin')]
 
@@ -271,6 +303,8 @@ def main():
         strings = create_strings_from_wikipedia(args.length, args.count, args.language)
     elif args.input_file != '':
         strings = create_strings_from_file(args.input_file, args.count)
+        #custom by Arthur
+        args.name_format = 2
     elif args.random_sequences:
         strings = create_strings_randomly(args.length, args.random, args.count,
                                           args.include_letters, args.include_numbers, args.include_symbols, args.language)
@@ -279,35 +313,46 @@ def main():
             args.name_format = 2
     else:
         strings = create_strings_from_dict(args.length, args.random, args.count, lang_dict)
+        args.name_format = 2
 
-
+  
     string_count = len(strings)
+    all_boxes = [None] * string_count 
+    def set_boxes(i, boxes):
+        all_boxes[i] = boxes
+
 
     p = Pool(args.thread_count)
-    for _ in tqdm(p.imap_unordered(
+    for something, index in tqdm(p.imap_unordered(
         FakeTextDataGenerator.generate_from_tuple,
         zip(
             [i for i in range(0, string_count)],
             strings,
-            [fonts[random.randrange(0, len(fonts))] for _ in range(0, string_count)],
+            #[fonts[random.randrange(0, len(fonts))] for _ in range(0, string_count)],
+            [fonts] * string_count,
             [args.output_dir] * string_count,
-            [args.format] * string_count,
+            [args.height] * string_count,
+            [args.random_height] * string_count,
             [args.extension] * string_count,
             [args.skew_angle] * string_count,
             [args.random_skew] * string_count,
             [args.blur] * string_count,
             [args.random_blur] * string_count,
             [args.background] * string_count,
+            [args.random_bg] * string_count,
             [args.distorsion] * string_count,
             [args.distorsion_orientation] * string_count,
             [args.handwritten] * string_count,
             [args.name_format] * string_count,
             [args.width] * string_count,
+            [args.random_width] * string_count,
             [args.alignment] * string_count,
-            [args.text_color] * string_count
+            [args.bounding_box] * string_count,
+            [args.view_bounding_box] * string_count,
+            [args.random_alignment] * string_count,
         )
     ), total=args.count):
-        pass
+        all_boxes[index] = something
     p.terminate()
 
     if args.name_format == 2:
@@ -315,7 +360,11 @@ def main():
         with open(os.path.join(args.output_dir, "labels.txt"), 'w', encoding="utf8") as f:
             for i in range(string_count):
                 file_name = str(i) + "." + args.extension
-                f.write("{} {}\n".format(file_name, strings[i]))
+                if args.bounding_box:
+                    f.write("{}:{}:{}\n".format(file_name, strings[i], all_boxes[i]))
+                else:
+                    f.write("{}:{}\n".format(file_name, strings[i]))
+
 
 if __name__ == '__main__':
     main()

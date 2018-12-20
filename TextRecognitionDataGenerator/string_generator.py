@@ -1,3 +1,4 @@
+import os
 import random
 import re
 import string
@@ -35,8 +36,8 @@ def create_strings_from_dict(length, allow_variable, count, lang_dict):
         current_string = ""
         for _ in range(0, random.randint(1, length) if allow_variable else length):
             current_string += lang_dict[random.randrange(dict_len)][:-1]
-            current_string += ' '
-        strings.append(current_string[:-1])
+            current_string += ''
+        strings.append(current_string)
     return strings
 
 def create_strings_from_wikipedia(minimum_length, count, lang):
