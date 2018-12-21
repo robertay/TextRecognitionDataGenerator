@@ -2,6 +2,19 @@
 
 A synthetic data generator for text recognition
 
+# Note on new features
+I'll add details later but for now try
+
+`python run.py`
+
+to see the command line options
+and
+
+`python run.py -l ja -c 100 -r -w 2 -rbg -ht 40 -rht 100 -rk -k 3 -rbl -bl 2 -wd 20 -rwd 100 -ral -bb -vbb -t 4`
+
+to try some of the new features.
+They aren't all configurable from the command line yet.
+
 ## What is it for?
 Generating text image samples to train an OCR software. Now supporting non-latin text!
 
