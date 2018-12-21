@@ -5,7 +5,7 @@ A synthetic data generator for text recognition
 # Note on new features
 I'll add details later but for now try
 
-`python run.py`
+`python run.py -h`
 
 to see the command line options
 and
