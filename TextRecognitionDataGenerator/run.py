@@ -323,12 +323,11 @@ def main():
 
 
     p = Pool(args.thread_count)
-    for something, index in tqdm(p.imap_unordered(
+    for boxes, index in tqdm(p.imap_unordered(
         FakeTextDataGenerator.generate_from_tuple,
         zip(
             [i for i in range(0, string_count)],
             strings,
-            #[fonts[random.randrange(0, len(fonts))] for _ in range(0, string_count)],
             [fonts] * string_count,
             [args.output_dir] * string_count,
             [args.height] * string_count,
@@ -352,7 +351,7 @@ def main():
             [args.random_alignment] * string_count,
         )
     ), total=args.count):
-        all_boxes[index] = something
+        all_boxes[index] = boxes
     p.terminate()
 
     if args.name_format == 2:

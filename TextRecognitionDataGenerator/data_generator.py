@@ -93,7 +93,7 @@ class FakeTextDataGenerator(object):
         
         x_factor = new_width / old_width
         y_factor = (height - 10) / old_height 
-        #y_factor = 1
+
         if bounding_box:
             i = 0
             for roi in rois:
@@ -132,7 +132,6 @@ class FakeTextDataGenerator(object):
 
         if random_alignment:
             alignment = random.randint(0,2)
-            #alignment = random.randint(0,1) #Arthur edit
 
         if alignment == 0:
             x_offset = 5

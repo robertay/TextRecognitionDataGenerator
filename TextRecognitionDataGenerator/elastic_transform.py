@@ -19,12 +19,9 @@ class ElasticTransform(object):
         	
         dx = gaussian_filter((random_state.rand(*shape) * 2 - 1), sigma, mode="constant", cval=0) * alpha
         dy = gaussian_filter((random_state.rand(*shape) * 2 - 1), sigma, mode="constant", cval=0) * alpha
-        #dz = np.zeros_like(dx)
 
-        #x, y, z = np.meshgrid(np.arange(shape[1]), np.arange(shape[0]), np.arange(shape[2]))
         x, y = np.meshgrid(np.arange(shape[1]), np.arange(shape[0]))
         indices = np.reshape(y+dy, (-1, 1)), np.reshape(x+dx, (-1, 1))
-        #indices = np.reshape(y+dy, (-1, 1)), np.reshape(x+dx, (-1, 1)), np.reshape(z, (-1, 1))
 
         distorted_image = map_coordinates(open_cv_image, indices, order=1, mode='reflect')
 

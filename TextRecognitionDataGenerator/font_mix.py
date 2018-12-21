@@ -4,15 +4,10 @@ from PIL import Image, ImageFont, ImageDraw
 import random
 import os
 
-#FONT_PATH="./fonts/fonts-ja/"
-#FONT_PATH="./fonts/ja/"
-#FONT_PATH="./fonts/latin/"
-
 class FontMix(object):
 
     @classmethod
     def randSpacing(self):
-        #return float(random.randint(-30,0))/10
         return float(random.randint(-20,0))/10
     
     @classmethod
@@ -63,13 +58,8 @@ class FontMix(object):
             yield random.randint(low,hi)
 
     @classmethod                             
-    #def randomFont(self, path):
     def randomFont(self, fonts):
-        #font_list = os.listdir(path)
-        #font_file = font_list[random.randint(0, len(font_list)-1)] 
         font_file = fonts[random.randint(0, len(fonts) - 1)] 
-        #print(font_file)
-        #return os.path.join(path, font_file) 
         return font_file 
     
     class Text:
