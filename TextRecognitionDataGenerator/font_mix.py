@@ -31,7 +31,6 @@ class FontMix(object):
                 except:
                     print("Error with this font: ", font.getname(), " drawing this character: \'", char, "\', hex code: ", hex(ord(char.encode('utf-8'))))
                     raise
-                #print("start coord" + str(base_x))
                 char_rois.append((base_x + width_start, 
                                   base_y + y + offset_y, 
                                   top_x + width_start, 
