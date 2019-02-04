@@ -8,11 +8,12 @@ class FontMix(object):
 
     @classmethod
     def randSpacing(self):
-        return float(random.randint(-20,0))/10
+        return float(random.randint(-20,20))/10
     
     @classmethod
     def calcSpacing(self, spacing, font_size):
         return int((spacing - 1) * 2 * font_size / 70)
+        #return 1
     
     @classmethod
     def drawText(self, draw, x, y, string, font, spacing, fill, bounding_box):
@@ -30,6 +31,7 @@ class FontMix(object):
                 except:
                     print("Error with this font: ", font.getname(), " drawing this character: \'", char, "\', hex code: ", hex(ord(char.encode('utf-8'))))
                     raise
+                #print("start coord" + str(base_x))
                 char_rois.append((base_x + width_start, 
                                   base_y + y + offset_y, 
                                   top_x + width_start, 
@@ -39,9 +41,14 @@ class FontMix(object):
     
     @classmethod
     def sizeText(self, font, string, spacing):
-        width, height = font.getsize(string)
-        width = width + spacing * (len(string)-1) 
-        return (width, height)
+        pixel_offset = spacing
+        total_width = 0
+        total_height = 0
+        for char in string:
+            (w, h),(_, offset_y) = font.font.getsize(char)
+            total_width += w + pixel_offset
+            total_height = max(total_height, h + offset_y)    
+        return (total_width, total_height)
     
     @classmethod
     def randSplit(self, word, splits):
@@ -65,7 +72,7 @@ class FontMix(object):
     class Text:
         def __init__(self, string, font_path, font_size):
             self.string = string
-            self.font = ImageFont.truetype(font_path, size = random.randint(-2,2) + font_size)
+            self.font = ImageFont.truetype(font_path, size = random.randint(-20,20) + font_size)
             self.spacing = FontMix.calcSpacing(FontMix.randSpacing(), font_size)
             self.text_width, self.text_height = FontMix.sizeText(self.font, self.string, self.spacing) 
             self.ascent = self.font.font.ascent
