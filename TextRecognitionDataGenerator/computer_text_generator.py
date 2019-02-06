@@ -10,9 +10,7 @@ class ComputerTextGenerator(object):
     @classmethod
     def generate(cls, text, fonts, text_color, font_size, bounding_box):
 
-        fill = random.randint(1, 100) if text_color < 0 else text_color
-        
-        txt_img, roi = FontMix.draw(text, fonts, fill, font_size, bounding_box)
+        txt_img, roi = FontMix.draw(text, fonts, text_color, font_size, bounding_box)
 
         
         return txt_img, roi

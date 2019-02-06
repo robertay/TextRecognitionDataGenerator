@@ -8,11 +8,11 @@ class FontMix(object):
 
     @classmethod
     def randSpacing(self):
-        return float(random.randint(-20,20))/10
+        return float(random.randint(-20,20))/10 # TODO fix hardcoded random spacing
     
     @classmethod
     def calcSpacing(self, spacing, font_size):
-        return int((spacing - 1) * 2 * font_size / 70)
+        return int((spacing - 1) * 2 * font_size / 70) 
         #return 1
     
     @classmethod
@@ -23,7 +23,7 @@ class FontMix(object):
         vfill = fill
         for char in string:
             (w,h),(_,offset_y) = font.font.getsize(char) 
-            vfill = max(0, fill + random.randint(-10,10))
+            vfill = max(0, fill + random.randint(-5,5)) # TODO fix hardcoded random character fill
             draw.text((width_start, y), char, fill=(vfill, vfill, vfill), font=font) 
             if bounding_box and char is not ' ':
                 try:
@@ -71,7 +71,7 @@ class FontMix(object):
     class Text:
         def __init__(self, string, font_path, font_size):
             self.string = string
-            self.font = ImageFont.truetype(font_path, size = random.randint(-20,20) + font_size)
+            self.font = ImageFont.truetype(font_path, size = random.randint(-20,20) + font_size) # TODO fix hardcoded random font size
             self.spacing = FontMix.calcSpacing(FontMix.randSpacing(), font_size)
             self.text_width, self.text_height = FontMix.sizeText(self.font, self.string, self.spacing) 
             self.ascent = self.font.font.ascent
@@ -105,7 +105,7 @@ class FontMix(object):
         image_ascent = max(text_object.ascent for text_object in text_objects)
         image_height = self.calcImageHeight(text_objects, image_ascent)
         
-        text_image = Image.new('RGBA', (image_width, image_height), (0, 0, 0, 0))
+        text_image = Image.new('RGBA', (image_width + 5, image_height), (0, 0, 0, 0))
         draw = ImageDraw.Draw(text_image)
         string_rois = self.drawImage(draw, text_objects, image_ascent, fill, bounding_box)
         

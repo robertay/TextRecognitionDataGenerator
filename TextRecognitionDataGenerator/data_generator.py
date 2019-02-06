@@ -13,6 +13,7 @@ except ImportError as e:
     print('Missing modules for handwritten text generation.')
 from background_generator import BackgroundGenerator
 from distorsion_generator import DistorsionGenerator
+from image_degrader import ImageDegrader
 
 class FakeTextDataGenerator(object):
     @classmethod
@@ -47,9 +48,10 @@ class FakeTextDataGenerator(object):
         if is_handwritten:
             image = HandwrittenTextGenerator.generate(text)
         else:
-            image, rois = ComputerTextGenerator.generate(text, fonts, text_color, height, bounding_box)
+            fill = random.randint(1, 150) if text_color < 0 else text_color
+            image, rois = ComputerTextGenerator.generate(text, fonts, fill, height, bounding_box)
 
-        random_angle = random.randint(0-skewing_angle, skewing_angle)
+        random_angle = random.randint(-skewing_angle, skewing_angle)
 
         rotated_img = image.rotate(skewing_angle if not random_skew else random_angle, expand=1)
 
@@ -112,13 +114,17 @@ class FakeTextDataGenerator(object):
         # Generate background image #
         #############################
         if random_bg:
-            background_type = random.randint(0,2)
+            background_type = random.randint(0, 4)
 
         if background_type == 0:
             background = BackgroundGenerator.gaussian_noise(height, background_width)
         elif background_type == 1:
             background = BackgroundGenerator.plain_white(height, background_width)
         elif background_type == 2:
+            background = BackgroundGenerator.plain_gray(height, background_width)
+        elif background_type == 3:
+            background = BackgroundGenerator.gray_gaussian(height, background_width)
+        elif background_type == 4:
             background = BackgroundGenerator.quasicrystal(height, background_width)
         else:
             background = BackgroundGenerator.picture(height, background_width)
@@ -148,6 +154,13 @@ class FakeTextDataGenerator(object):
             for roi in rois:
                 rois[i] = (np.array(roi) + np.array([x_offset, 5, x_offset, 5])).tolist()
                 i += 1
+
+        ##################################
+        # Draw a line on the image       #
+        ##################################
+        draw_line = 1
+        if draw_line:
+            ImageDegrader.draw_line(background, random.randint(2, 50), random.randint(fill - 10, fill + 10), random.randint(2, 4))
         
         ##################################
         # Apply gaussian blur #
@@ -196,6 +209,12 @@ class FakeTextDataGenerator(object):
 #        for roi in rois:
 #            drawrois.rectangle(roi, outline=0, fill=None)
 
+        ##################################
+        # Randomly degrade image         #
+        ##################################
+        degrade = 1
+        if degrade:
+             final_image = ImageDegrader.gaussian_degrade(final_image)
 
         ##################################
         # Draw ROIs as a test #

@@ -168,7 +168,7 @@ def parse_arguments():
         "--background",
         type=int,
         nargs="?",
-        help="Define what kind of background to use. 0: Gaussian Noise, 1: Plain white, 2: Quasicrystal, 3: Pictures",
+        help="Define what kind of background to use. 0: Gaussian Noise, 1: Gray Gaussian, 2: Plain white, 3: Plain gray, 4: Quasicrystal, 5: Pictures",
         default=0,
     )
     parser.add_argument(

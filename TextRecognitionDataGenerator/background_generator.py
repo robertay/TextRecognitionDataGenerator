@@ -30,6 +30,32 @@ class BackgroundGenerator(object):
         return Image.new("L", (width, height), 255)
 
     @classmethod
+    def plain_gray(cls, height, width):
+        """
+            Create a plain gray background
+        """
+
+        return Image.new("L", (width, height), random.randint(100, 254))
+
+    @classmethod
+    def gray_gaussian(cls, height, width):
+        """
+            Create a gray background with Gaussian noise
+        """
+        # We create an all white image
+        image = np.ones((height, width)) * 255
+
+        # We add gaussian noise
+        cv2.randn(image, random.randint(100,225), 10)
+
+        return Image.fromarray(image).convert('L')
+
+
+        return Image.new("L", (width, height), random.randint(100, 254))
+
+
+
+    @classmethod
     def quasicrystal(cls, height, width):
         """
             Create a background with quasicrystal (https://en.wikipedia.org/wiki/Quasicrystal)
