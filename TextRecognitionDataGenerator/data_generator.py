@@ -48,7 +48,7 @@ class FakeTextDataGenerator(object):
         if is_handwritten:
             image = HandwrittenTextGenerator.generate(text)
         else:
-            fill = random.randint(1, 150) if text_color < 0 else text_color
+            fill = random.randint(1, 110) if text_color < 0 else text_color
             image, rois = ComputerTextGenerator.generate(text, fonts, fill, height, bounding_box)
 
         random_angle = random.randint(-skewing_angle, skewing_angle)
@@ -175,7 +175,7 @@ class FakeTextDataGenerator(object):
         ##################################
         # Apply elastic transform #
         ##################################
-        final_image = ElasticTransform.generate(blur_image, random.randint(0, 20) / 100 , random.randint(1, 100) / 100)
+        final_image = ElasticTransform.generate(blur_image, random.randint(1, 20) / 100 , random.randint(4, 100) / 100)
 
         #################################################
         # Apply width reduction to get skinny characters#

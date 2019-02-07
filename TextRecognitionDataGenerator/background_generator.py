@@ -35,7 +35,7 @@ class BackgroundGenerator(object):
             Create a plain gray background
         """
 
-        return Image.new("L", (width, height), random.randint(100, 254))
+        return Image.new("L", (width, height), random.randint(150, 254))
 
     @classmethod
     def gray_gaussian(cls, height, width):
@@ -46,12 +46,12 @@ class BackgroundGenerator(object):
         image = np.ones((height, width)) * 255
 
         # We add gaussian noise
-        cv2.randn(image, random.randint(100,225), 10)
+        cv2.randn(image, random.randint(150,225), 10)
 
         return Image.fromarray(image).convert('L')
 
 
-        return Image.new("L", (width, height), random.randint(100, 254))
+        #return Image.new("L", (width, height), random.randint(100, 254))
 
 
 

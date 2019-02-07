@@ -8,7 +8,7 @@ class FontMix(object):
 
     @classmethod
     def randSpacing(self):
-        return float(random.randint(-20,20))/10 # TODO fix hardcoded random spacing
+        return float(random.randint(-10,20))/10 # TODO fix hardcoded random spacing
     
     @classmethod
     def calcSpacing(self, spacing, font_size):
@@ -29,7 +29,8 @@ class FontMix(object):
                 try:
                     base_x, base_y, top_x, top_y = font.getmask(char).getbbox()
                 except:
-                    print("Error with this font: ", font.getname(), " drawing this character: \'", char, "\', hex code: ", hex(ord(char.encode('utf-8'))))
+                    #print("Error with this font: ", font.getname(), " drawing this character: \'", char, "\', hex code: ", hex(ord(char.encode('utf-8'))))
+                    print("Error with this font: ", font.getname(), " drawing this character: \'", char, "\', hex code: ")
                     raise
                 char_rois.append((base_x + width_start, 
                                   base_y + y + offset_y, 
