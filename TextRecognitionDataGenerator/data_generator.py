@@ -49,11 +49,37 @@ class FakeTextDataGenerator(object):
             image = HandwrittenTextGenerator.generate(text)
         else:
             fill = random.randint(1, 110) if text_color < 0 else text_color
+            bounding_box = 1
             image, rois = ComputerTextGenerator.generate(text, fonts, fill, height, bounding_box)
+            if text is not " ":
+                #print("bboxes:")
+                #print(rois)
+                #print(rois[0][1])
+                #print(image.size[0])
+                #print("end bbox")
+                image = image.crop((0, random.randint(0, max(1, rois[0][1] - 1)), image.size[0], image.size[1]))
+                width, height = image.size
+                resize_factor = 4 
+                up_image = image.resize((int(width * resize_factor), int(height * resize_factor)))
+                #print("upscale to: ", (int(width * resize_factor), int(height * resize_factor)))
+ 
+                #image = image.filter(ImageFilter.MaxFilter(3))
+                up_image = up_image.filter(ImageFilter.MinFilter(3))
+                width, height = up_image.size
+                resize_factor = 0.2
+                down_image = up_image.resize((int(width * resize_factor), int(height * resize_factor)))
+        
+                #print("downscale to: ", (int(width * resize_factor), int(height * resize_factor)))
+            else:
+                down_image = image
+
+                
+
+            bounding_box = 0
 
         random_angle = random.randint(-skewing_angle, skewing_angle)
 
-        rotated_img = image.rotate(skewing_angle if not random_skew else random_angle, expand=1)
+        rotated_img = down_image.rotate(skewing_angle if not random_skew else random_angle, expand=1)
 
         if bounding_box:
             rois = RoiRotator.compute(rois, random_angle, image.size, rotated_img.size) 
@@ -114,7 +140,8 @@ class FakeTextDataGenerator(object):
         # Generate background image #
         #############################
         if random_bg:
-            background_type = random.randint(0, 4)
+            background_type = random.randint(1, 2)
+            #background_type = random.randint(0, 4)
 
         if background_type == 0:
             background = BackgroundGenerator.gaussian_noise(height, background_width)
@@ -158,7 +185,7 @@ class FakeTextDataGenerator(object):
         ##################################
         # Draw a line on the image       #
         ##################################
-        draw_line = 1
+        draw_line = 0 
         if draw_line:
             ImageDegrader.draw_line(background, random.randint(2, 50), random.randint(fill - 10, fill + 10), random.randint(2, 4))
         
@@ -202,7 +229,8 @@ class FakeTextDataGenerator(object):
         # Downsample to smaller image #
         ##################################
 #        width, height = final_image.size
-#        resize_factor = random.randint(20,30) / height 
+#        #resize_factor = random.randint(20,30) / height 
+#        resize_factor = 0.25 
 #        final_image = final_image.resize((int(width * resize_factor), int(height * resize_factor)))
   
 #        drawrois = ImageDraw.Draw(final_image)
@@ -215,6 +243,12 @@ class FakeTextDataGenerator(object):
         degrade = 1
         if degrade:
              final_image = ImageDegrader.gaussian_degrade(final_image)
+            
+        ##################################
+        # Randomly degrade image 2       #
+        ##################################
+        
+#        final_image = final_image.filter(ImageFilter.MinFilter(3))
 
         ##################################
         # Draw ROIs as a test #
@@ -222,9 +256,21 @@ class FakeTextDataGenerator(object):
         if bounding_box and view_bounding_box:
             FakeTextDataGenerator.draw_bounding_boxes(final_image, rois)
 
-        #####################################
-        # Generate name for resulting image #
-        #####################################
+        ##################################
+        #         Pad image              #
+        ##################################
+
+        top = random.randint(2, 4)
+        bottom = random.randint(2, 4)
+        left = random.randint(2,10)
+        right = random.randint(2,10)
+        npimg = np.array(final_image)
+        npimg = np.pad(npimg, ((top, bottom), (left, right)), 'edge')
+        final_image = Image.fromarray(npimg.astype("uint8"))
+
+
+        
+
         if name_format == 0:
             image_name = '{}_{}.{}'.format(text, str(index), extension)
         elif name_format == 1:
