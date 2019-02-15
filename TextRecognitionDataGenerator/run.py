@@ -295,6 +295,7 @@ def main():
 
     # Create font (path) list
     fonts = load_fonts(args.language)
+    fonts_ja = load_fonts('ja')
 
     # Creating synthetic sentences (or word)
     strings = []
@@ -329,6 +330,7 @@ def main():
             [i for i in range(0, string_count)],
             strings,
             [fonts] * string_count,
+            [fonts_ja] * string_count,
             [args.output_dir] * string_count,
             [args.height] * string_count,
             [args.random_height] * string_count,
