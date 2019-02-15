@@ -31,7 +31,7 @@ class FakeTextDataGenerator(object):
             drawbbox.rectangle(roi, outline=0, fill=None) # Only works for grayscale images need outline=(0,0,0) for color
 
     @classmethod
-    def generate(cls, index, text, fonts, out_dir, height, random_height, extension, skewing_angle, random_skew, 
+    def generate(cls, index, text, fonts, fonts_ja, out_dir, height, random_height, extension, skewing_angle, random_skew, 
                  blur, random_blur, background_type, random_bg, distorsion_type, distorsion_orientation, 
                  is_handwritten, name_format, width, random_width, alignment, bounding_box, view_bounding_box, random_alignment, text_color=-1):
         image = None
@@ -50,7 +50,7 @@ class FakeTextDataGenerator(object):
         else:
             fill = random.randint(1, 110) if text_color < 0 else text_color
             bounding_box = 1
-            image, rois = ComputerTextGenerator.generate(text, fonts, fill, height, bounding_box)
+            image, rois = ComputerTextGenerator.generate(text, fonts, fonts_ja, fill, height, bounding_box)
             if text is not " ":
                 #print("bboxes:")
                 #print(rois)
