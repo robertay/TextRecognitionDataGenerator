@@ -10,9 +10,10 @@ class ComputerTextGenerator(object):
     @classmethod
     def generate(cls, text, fonts, fonts_ja, text_color, font_size, bounding_box):
 
-        if '〒' in text:
-            fonts = fonts_ja
-        txt_img, roi = FontMix.draw(text, fonts, text_color, font_size, bounding_box)
+#        jplist = ['〒', '年', '月', '日', '円']
+#        if any(char in text for char in jplist):
+#            fonts = fonts_ja
+        txt_img, roi = FontMix.draw(text, fonts, fonts_ja, text_color, font_size, bounding_box)
 
         
         return txt_img, roi

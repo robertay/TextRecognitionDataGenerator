@@ -33,7 +33,7 @@ class FakeTextDataGenerator(object):
     @classmethod
     def generate(cls, index, text, fonts, fonts_ja, out_dir, height, random_height, extension, skewing_angle, random_skew, 
                  blur, random_blur, background_type, random_bg, distorsion_type, distorsion_orientation, 
-                 is_handwritten, name_format, width, random_width, alignment, bounding_box, view_bounding_box, random_alignment, text_color=-1):
+                 is_handwritten, name_format, width, random_width, alignment, bounding_box, view_bounding_box, random_alignment, random_crop, text_color=-1):
         image = None
 
         #########################################################################
@@ -48,40 +48,36 @@ class FakeTextDataGenerator(object):
         if is_handwritten:
             image = HandwrittenTextGenerator.generate(text)
         else:
-            fill = random.randint(1, 110) if text_color < 0 else text_color
-            bounding_box = 1
-            image, rois = ComputerTextGenerator.generate(text, fonts, fonts_ja, fill, height, bounding_box)
+            fill = random.randint(1, 200) if text_color < 0 else text_color
+
+            image, rois = ComputerTextGenerator.generate(text, fonts, fonts_ja, fill, height, bounding_box = random_crop or bounding_box)
             if text is not " ":
-                #print("bboxes:")
-                #print(rois)
-                #print(rois[0][1])
-                #print(image.size[0])
-                #print("end bbox")
-                image = image.crop((0, random.randint(0, max(1, rois[0][1] - 1)), image.size[0], image.size[1]))
-                width, height = image.size
-                resize_factor = 4 
-                up_image = image.resize((int(width * resize_factor), int(height * resize_factor)))
-                #print("upscale to: ", (int(width * resize_factor), int(height * resize_factor)))
- 
-                #image = image.filter(ImageFilter.MaxFilter(3))
-                up_image = up_image.filter(ImageFilter.MinFilter(3))
-                width, height = up_image.size
-                resize_factor = 0.2
-                down_image = up_image.resize((int(width * resize_factor), int(height * resize_factor)))
-        
+                #width, height = image.size
+#                resize_factor = 4 
+#                up_image = image.resize((int(width * resize_factor), int(height * resize_factor)))
+#                #print("upscale to: ", (int(width * resize_factor), int(height * resize_factor)))
+# 
+#                #image = image.filter(ImageFilter.MaxFilter(3))
+#                up_image = up_image.filter(ImageFilter.MinFilter(3))
+#                width, height = up_image.size
+#                resize_factor = 0.2
+#                down_image = up_image.resize((int(width * resize_factor), int(height * resize_factor)))
+
+                down_image = image        
                 #print("downscale to: ", (int(width * resize_factor), int(height * resize_factor)))
             else:
-                down_image = image
+                blank_width = random.randint(20, 600)
+                blank_height = random.randint(height, random_height) 
+                down_image = image.resize((blank_width, blank_height))
 
                 
 
-            bounding_box = 0
 
         random_angle = random.randint(-skewing_angle, skewing_angle)
 
         rotated_img = down_image.rotate(skewing_angle if not random_skew else random_angle, expand=1)
 
-        if bounding_box:
+        if bounding_box or random_crop:
             rois = RoiRotator.compute(rois, random_angle, image.size, rotated_img.size) 
 
 
@@ -122,7 +118,7 @@ class FakeTextDataGenerator(object):
         x_factor = new_width / old_width
         y_factor = (height - 10) / old_height 
 
-        if bounding_box:
+        if (bounding_box or random_crop) and text is not " ":
             i = 0
             for roi in rois:
                 rois[i] = (np.array(roi) * np.array([x_factor, y_factor, x_factor, y_factor])).astype(int)
@@ -140,7 +136,8 @@ class FakeTextDataGenerator(object):
         # Generate background image #
         #############################
         if random_bg:
-            background_type = random.randint(1, 2)
+            background_type = random.randint(0, 4)
+            #background_type = random.randint(1, 2)
             #background_type = random.randint(0, 4)
 
         if background_type == 0:
@@ -176,7 +173,7 @@ class FakeTextDataGenerator(object):
             x_offset = background_width - new_text_width - 5
             background.paste(resized_img, (x_offset, 5), resized_img)
 
-        if bounding_box:
+        if (bounding_box or random_crop) and text is not " ":
             i = 0
             for roi in rois:
                 rois[i] = (np.array(roi) + np.array([x_offset, 5, x_offset, 5])).tolist()
@@ -185,7 +182,7 @@ class FakeTextDataGenerator(object):
         ##################################
         # Draw a line on the image       #
         ##################################
-        draw_line = 0 
+        draw_line = 1 
         if draw_line:
             ImageDegrader.draw_line(background, random.randint(2, 50), random.randint(fill - 10, fill + 10), random.randint(2, 4))
         
@@ -240,8 +237,8 @@ class FakeTextDataGenerator(object):
         ##################################
         # Randomly degrade image         #
         ##################################
-        degrade = 1
-        if degrade:
+        degrade = random.randint(1, 3) 
+        if degrade is 1:
              final_image = ImageDegrader.gaussian_degrade(final_image)
             
         ##################################
@@ -251,22 +248,59 @@ class FakeTextDataGenerator(object):
 #        final_image = final_image.filter(ImageFilter.MinFilter(3))
 
         ##################################
+        # Calculate text area roi        #
+        ##################################
+        if (random_crop) and (len(rois) != 0):
+            try:
+                max_x = rois[len(rois) - 1][2] 
+                min_x = rois[0][0]
+                max_y = rois[0][3]
+                min_y = rois[0][1]
+            except:
+                print(text, rois)
+                raise
+            for roi in rois:
+                max_y = roi[3] if roi[3] > max_y else max_y 
+                min_y = roi[1] if roi[1] < min_y else min_y
+            #print(rois)
+            #print(image.size)
+            #print(min_x, min_y, max_x, max_y)
+            #print("bboxes:")
+            #print(rois)
+            #print(rois[0][0], rois[0][1], rois[0][2], rois[0][3])
+            #print(image.size[0])
+            #print("end bbox")
+            #image = image.crop((0, random.randint(0, max(1, rois[0][1] - 1)), image.size[0], image.size[1]))
+            left_horizontal_crop = random.randint(0, max(1, min_x))
+            top_vertical_crop = random.randint(0, max(1, min_y))
+            right_horizontal_crop = random.randint(min(final_image.size[0] - 1, max_x + 1), final_image.size[0])
+            bottom_vertical_crop = random.randint(min(final_image.size[1] - 1, max_y + 1), final_image.size[1])
+#            frois = [[left_horizontal_crop, top_vertical_crop, right_horizontal_crop, bottom_vertical_crop]]
+#            frois = [[min_x, min_y, max_x, max_y]]
+
+
+            final_image = final_image.crop((left_horizontal_crop, top_vertical_crop, right_horizontal_crop, bottom_vertical_crop))
+            #width, height = image.size
+#
+        ##################################
         # Draw ROIs as a test #
         ##################################
         if bounding_box and view_bounding_box:
             FakeTextDataGenerator.draw_bounding_boxes(final_image, rois)
+#        if random_crop and text is not " ":
+#            FakeTextDataGenerator.draw_bounding_boxes(final_image, frois)
 
         ##################################
         #         Pad image              #
         ##################################
 
-        top = random.randint(2, 4)
-        bottom = random.randint(2, 4)
-        left = random.randint(2,10)
-        right = random.randint(2,10)
-        npimg = np.array(final_image)
-        npimg = np.pad(npimg, ((top, bottom), (left, right)), 'edge')
-        final_image = Image.fromarray(npimg.astype("uint8"))
+#        top = random.randint(2, 4)
+#        bottom = random.randint(2, 4)
+#        left = random.randint(0,10)
+#        right = random.randint(0,10)
+#        npimg = np.array(final_image)
+#        npimg = np.pad(npimg, ((top, bottom), (left, right)), 'edge')
+#        final_image = Image.fromarray(npimg.astype("uint8"))
 
 
         
@@ -282,5 +316,9 @@ class FakeTextDataGenerator(object):
             image_name = '{}_{}.{}'.format(text, str(index), extension)
 
         # Save the image
-        final_image.convert('RGB').save(os.path.join(out_dir, image_name))
+        try:
+            final_image.convert('RGB').save(os.path.join(out_dir, image_name))
+        except:
+            print("Error with text: ", text, " of size: ", image.size) 
+            raise
         return rois, index

@@ -35,7 +35,7 @@ class BackgroundGenerator(object):
             Create a plain gray background
         """
 
-        return Image.new("L", (width, height), random.randint(150, 254))
+        return Image.new("L", (width, height), random.randint(220, 254))
 
     @classmethod
     def gray_gaussian(cls, height, width):

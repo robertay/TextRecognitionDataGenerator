@@ -8,7 +8,7 @@ class FontMix(object):
 
     @classmethod
     def randSpacing(self):
-        return float(random.randint(-10,20))/10 # TODO fix hardcoded random spacing
+        return float(random.randint(-10,100))/10 # TODO fix hardcoded random spacing
     
     @classmethod
     def calcSpacing(self, spacing, font_size):
@@ -21,9 +21,14 @@ class FontMix(object):
         width_start = x
         char_rois = []
         vfill = fill
+
+#        min_x = 0
+#        max_x = 0
+#        min_y = 0
+#        max_y = 0
         for char in string:
             (w,h),(_,offset_y) = font.font.getsize(char) 
-            vfill = max(0, fill + random.randint(-5,5)) # TODO fix hardcoded random character fill
+            vfill = max(0, fill + random.randint(-8,8)) # TODO fix hardcoded random character fill
             draw.text((width_start, y), char, fill=(vfill, vfill, vfill), font=font) 
             if bounding_box and char is not ' ':
                 try:
@@ -32,10 +37,22 @@ class FontMix(object):
                     #print("Error with this font: ", font.getname(), " drawing this character: \'", char, "\', hex code: ", hex(ord(char.encode('utf-8'))))
                     print("Error with this font: ", font.getname(), " drawing this character: \'", char, "\', hex code: ")
                     raise
-                char_rois.append((base_x + width_start, 
-                                  base_y + y + offset_y, 
-                                  top_x + width_start, 
-                                  top_y + y + offset_y))
+                left_x = base_x + width_start
+                bottom_y = base_y + y + offset_y
+                right_x = top_x + width_start
+                top_y = top_y + y + offset_y
+                char_rois.append((left_x, 
+                                  bottom_y, 
+                                  right_x, 
+                                  top_y))
+                
+#                if left_x < min_x:
+#                    min_x = left_x
+#                if bottom_y < min_y:
+#                    min_y = bottom_y
+#                if right_x > max_x:
+#                    max_x = right_x
+#                if 
             width_start = width_start + w + pixel_offset
         return char_rois
     
@@ -72,7 +89,7 @@ class FontMix(object):
     class Text:
         def __init__(self, string, font_path, font_size):
             self.string = string
-            self.font = ImageFont.truetype(font_path, size = random.randint(-20,20) + font_size) # TODO fix hardcoded random font size
+            self.font = ImageFont.truetype(font_path, size = random.randint(-2,2) + font_size) # TODO fix hardcoded random font size
             self.spacing = FontMix.calcSpacing(FontMix.randSpacing(), font_size)
             self.text_width, self.text_height = FontMix.sizeText(self.font, self.string, self.spacing) 
             self.ascent = self.font.font.ascent
@@ -94,13 +111,16 @@ class FontMix(object):
         return string_rois
 
     @classmethod
-    def draw(self, text, fonts, fill, font_size, bounding_box):
+    def draw(self, text, fonts, fonts_ja, fill, font_size, bounding_box):
         
         split_text = list(self.randSplit(text,self.randGen(1,len(text))))
         text_objects = []
-        
+        jplist = ['〒', '年', '月', '日', '円', '平', '成', '令', '和']
+ 
         for string in split_text:
-           text_objects.append(FontMix.Text(string, self.randomFont(fonts), font_size)) 
+            if any(char in text for char in jplist):
+                fonts = fonts_ja
+            text_objects.append(FontMix.Text(string, self.randomFont(fonts), font_size)) 
         
         image_width = sum(text_object.text_width for text_object in text_objects)
         image_ascent = max(text_object.ascent for text_object in text_objects)

@@ -33,5 +33,6 @@ class ImageDegrader(object):
         length_y = random.randint(-max_y, max_y)
         endpoint = np.add(origin, (length_x, length_y))
 
-        draw.line((origin[0], origin[1], endpoint[0], endpoint[1]), fill = fill, width = width, joint = "curve")
+        #draw.line((origin[0], origin[1], endpoint[0], endpoint[1]), fill = fill, width = width, joint = "curve") #joint doesn't work with old versions of PIL
+        draw.line((origin[0], origin[1], endpoint[0], endpoint[1]), fill = fill, width = width)
 

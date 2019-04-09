@@ -250,6 +250,14 @@ def parse_arguments():
         help="When set, randomize alignment of text in the image",
         default=1
     )
+    parser.add_argument(
+        "-rc",
+        "--random_crop",
+        action="store_true",
+        help="When set, crop randomly around text within the image",
+        default=0
+    )
+
 
     return parser.parse_args()
 
@@ -351,6 +359,7 @@ def main():
             [args.bounding_box] * string_count,
             [args.view_bounding_box] * string_count,
             [args.random_alignment] * string_count,
+            [args.random_crop] * string_count,
         )
     ), total=args.count):
         all_boxes[index] = boxes
