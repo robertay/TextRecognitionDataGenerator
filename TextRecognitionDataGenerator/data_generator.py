@@ -262,6 +262,8 @@ class FakeTextDataGenerator(object):
             for roi in rois:
                 max_y = roi[3] if roi[3] > max_y else max_y 
                 min_y = roi[1] if roi[1] < min_y else min_y
+            left_horizontal_crop = random.randint(0, max(1, min_x))
+            top_vertical_crop = random.randint(0, max(1, min_y))
             right_horizontal_crop = random.randint(min(final_image.size[0] - 1, max_x + 1), final_image.size[0])
             bottom_vertical_crop = random.randint(min(final_image.size[1] - 1, max_y + 1), final_image.size[1])
 
