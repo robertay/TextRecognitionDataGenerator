@@ -247,9 +247,9 @@ class FakeTextDataGenerator(object):
         
 #        final_image = final_image.filter(ImageFilter.MinFilter(3))
 
-        ##################################
-        # Calculate text area roi        #
-        ##################################
+        ###########################################################################
+        # Calculate text area roi and perform random crop around this area        #
+        ###########################################################################
         if (random_crop) and (len(rois) != 0):
             try:
                 max_x = rois[len(rois) - 1][2] 
@@ -262,26 +262,12 @@ class FakeTextDataGenerator(object):
             for roi in rois:
                 max_y = roi[3] if roi[3] > max_y else max_y 
                 min_y = roi[1] if roi[1] < min_y else min_y
-            #print(rois)
-            #print(image.size)
-            #print(min_x, min_y, max_x, max_y)
-            #print("bboxes:")
-            #print(rois)
-            #print(rois[0][0], rois[0][1], rois[0][2], rois[0][3])
-            #print(image.size[0])
-            #print("end bbox")
-            #image = image.crop((0, random.randint(0, max(1, rois[0][1] - 1)), image.size[0], image.size[1]))
-            left_horizontal_crop = random.randint(0, max(1, min_x))
-            top_vertical_crop = random.randint(0, max(1, min_y))
             right_horizontal_crop = random.randint(min(final_image.size[0] - 1, max_x + 1), final_image.size[0])
             bottom_vertical_crop = random.randint(min(final_image.size[1] - 1, max_y + 1), final_image.size[1])
-#            frois = [[left_horizontal_crop, top_vertical_crop, right_horizontal_crop, bottom_vertical_crop]]
-#            frois = [[min_x, min_y, max_x, max_y]]
 
 
             final_image = final_image.crop((left_horizontal_crop, top_vertical_crop, right_horizontal_crop, bottom_vertical_crop))
-            #width, height = image.size
-#
+
         ##################################
         # Draw ROIs as a test #
         ##################################

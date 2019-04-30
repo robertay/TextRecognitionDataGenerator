@@ -1,5 +1,10 @@
 # Output files
 out/
+TextRecognitionDataGenerator/out/
+
+# All fonts and dicts
+TextRecognitionDataGenerator/fonts/
+TextRecognitionDataGenerator/dicts/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

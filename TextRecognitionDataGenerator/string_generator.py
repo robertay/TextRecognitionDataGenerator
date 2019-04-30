@@ -36,7 +36,7 @@ def create_strings_from_dict(length, allow_variable, count, lang_dict):
         current_string = ""
         for _ in range(0, random.randint(1, length) if allow_variable else length):
             current_string += lang_dict[random.randrange(dict_len)][:-1]
-            current_string += '' #removed spaces in data here
+            current_string += ' ' #removed spaces in data here
         strings.append(current_string)
     return strings
 
